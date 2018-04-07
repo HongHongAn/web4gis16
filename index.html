@@ -1,53 +1,223 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1,user-scalable=no"/>
-    <title>WebGIS Simple Map</title>
-    <link rel="stylesheet" href="https://js.arcgis.com/3.23/esri/css/esri.css">
-    <style>
-      html, body, #map {
-        height: 100%;
-        margin: 0;
-        padding: 0;
-      }
-    </style>
-    <script src="https://js.arcgis.com/3.23/"></script>
-    <script>
-      var map;
-    function scheduleJob() {  
-      require(["esri/map","dojo/dom","dojo/on","esri/geometry/Point","dojo/domReady!"], function(Map,dom,on,Point) {
-          on(dom.byId("scheduleJobBtns"), "click", scheduleJobs);
-          map = new Map("map", {
-          basemap: "topo",  //For full list of pre-defined basemaps, navigate to http://arcg.is/1JVo6Wd
-          center: [114.33, 30.58], // longitude, latitude
-          zoom: 13
-        });
-     function scheduleJobs() {     
-         var myZoom = dom.byId("inputTitle").value;
-         var myjd = dom.byId("longitude").value;   
-         var mywd = dom.byId("latitude").value;    
-         var myBasemap = dom.byId("basemap").value;
-         var myPoint = new Point(myjd, mywd);
-         map.setZoom(myZoom);
-         map.centerAt(myPoint);
-         map.setBasemap(myBasemap);
-         }
-      });
-        }
-    </script>
-  </head>
+	<head>
+		<title>myMap</title>
+		 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+         <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+         <link rel="stylesheet" href="https://js.arcgis.com/3.23/esri/css/esri.css">
+         <script src="https://js.arcgis.com/3.23/"></script>
+	</head>
+         <script>
+		
+		  dojo.require("esri.map");
+		  dojo.require("esri.dijit.Scalebar");
+          dojo.require("esri.layers.FeatureLayer");
+            
+             
+		  
+		  
+		   var map;
+		   
+		    var blockpoint;
+             var road;
 
-  <body >
-      
-       <div id="map">
-        <input type="button" id="scheduleJobBtn" value="显示地图" class="submitButton" onclick="scheduleJob()" /> 
-        <div >
-        <input id="inputTitle" type="text" value="" placeholder="缩放级别" />
-        <input id="longitude" type="text" value="" placeholder="经度" />
-        <input id="latitude" type="text" value="" placeholder="纬度" />
-        <input id="basemap" type="text" value="" placeholder="地图底图" />
-        <input type="button" id="scheduleJobBtns" value="显示地图" class="submitButton" /> 
+		   
+		  function init() {
+		  
+        map = new esri.Map("map",{
+          basemap: "streets",
+          center: [-95.249, 38.955],
+          zoom: 14
+        });
+              
+        map.on("extent-change",function(event){
+          if(map2)
+              {
+                  map2.setExtent(event.extent);
+              }
+        })
+        
+        map2 = new esri.Map("map2", {
+          basemap: "osm",  
+          center: [-95.249, 38.955], // longitude, latitude
+          zoom: 14
+        });    
+              
+              
+              
+		var scalebar = new esri.dijit.Scalebar({
+          map: map,
+          // "dual" displays both miles and kilometers
+          // "english" is the default, which displays miles
+          // use "metric" for kilometers
+          scalebarUnit: "metric"
+        });
+		
+		
+        dojo.connect(map, "onLoad", function() {          
+          //setup the drawing events
+          dojo.connect(map,"onMouseMove", showCoordinates);
+        });
+             
+            blockpoint = new esri.layers.FeatureLayer("https://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Demographics/ESRI_Census_USA/MapServer/0");
+            road = new esri.layers.FeatureLayer("https://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Demographics/ESRI_Census_USA/MapServer/1");  
+      }
+	  
+		function showCoordinates(evt) {
+        var mp = esri.geometry.webMercatorToGeographic(evt.mapPoint);
+        dojo.byId("coordsInfo").innerHTML = "Lat:" + mp.y.toFixed(2) + " Lon:" + mp.x.toFixed(2);
+      }
+      dojo.ready(init);
+	  
+	 function refresh2()
+			{
+			/*var obj_selectstyle = document.getElementById("selectstyle"); //定位id
+            var index_selectstyle = obj_selectstyle.selectedIndex; // 选中索引
+            var mybasemap = obj_selectstyle.options[index_selectstyle].text; // 选中文本	*/
+
+            var mybasemap;
+            var radios = document.getElementsByName('basemaps');
+            for (var i = 0, length = radios.length; i < length; i++) {
+                if (radios[i].checked) {
+                    // 弹出选中值
+                    mybasemap = radios[i].value;
+                    // 选中后退出循环
+                    break;
+                }
+            }
+
+			     map.setBasemap(mybasemap);
+			     map.centerAndZoom([-95.249, 38.955],14); 
+			}
+             
+          
+             
+              function add_blockPoint(){ 
+                 
+                
+                 
+                if(document.getElementById("featurelayers1").checked==true){  
+                   
+                    map.addLayer(blockpoint);
+                }
+                  else if(document.getElementById("featurelayers1").checked==false){        
+                    map.removeLayer(blockpoint);
+                }      
+        }
+
+        function add_road(){
+            
+                if(document.getElementById("featurelayers2").checked==true){        
+                    map.addLayer(road);
+                }
+
+                else if(document.getElementById("featurelayers2").checked==false){        
+                    map.removeLayer(road);
+                } 
+        }
+             
+              function juanlian()
+             {
+                 window.open("index2.html");
+             }
+             
+         </script>
+		
+		<style>
+            html, body,
+			#map {
+            height: 100%;
+            width:94%;
+            padding: 0;
+            margin: 0;
+			}
+            #map2 {
+            position:absolute;
+            height:180px;
+			right:20px;
+            width:230px;
+			bottom:30px;
+			}
+		  #coordsInfo{
+			position:absolute;
+			right:20px;
+			bottom:5px;
+			font-family:"Helvetica";
+			font-weight:800;
+			color:#333399;
+			z-index:50;
+			font-size:10pt;
+		  }
+		  #optionsDiv {
+				position: absolute;
+				right:0px;
+				top: 0px;
+				width:250px;
+				padding: 7px 0;
+				z-index: 1;
+				text-align: left;
+				background-color:white;}
+    </style>
+    <body class="claro">
+        <div id="map2"></div>
+        <div id="map">
+            <div  id="coordsInfo"></div>
+            <div id="optionsDiv">
+                <!-- 经度：<input type="text" id="txtlon"/><br/> -->
+                <!-- 纬度：<input type="text" id="txtlat"/><br/> -->
+                
+                <div style="border:1px width:250px;height:430px;overflow:auto">
+                    <form>
+                        <input type="radio" name="basemaps" id="osm" value="osm">osm<br/>
+                        <img src="basemap/osm.png" height="140px" width="220px"/><br/><br/>
+                        <input type="radio" name="basemaps" id="national-geographic" value="national-geographic">national-geographic<br/>
+                        <img src="basemap/national-geographic.png" height="140px" width="220px"/><br/><br/>
+                        <input type="radio" name="basemaps" id="topo" value="topo">topo<br>
+                        <img src="basemap/topo.png" height="140px" width="220px"/><br/><br/>
+                        <input type="radio" name="basemaps" id="streets" value="streets">streets<br>
+                        <img src="basemap/streets.png" height="140px" width="220px"/><br/><br/>
+                        <input type="radio" name="basemaps" id="satellite" value="satellite">satellite<br/>
+                        <img src="basemap/satellite.png" height="140px" width="220px"/><br/><br/>
+                        <input type="radio" name="basemaps" id="hybrid" value="hybrid">hybrid<br/> 
+                        <img src="basemap/hybrid.png" height="140px" width="220px"/><br/><br/>
+                        <input type="radio" name="basemaps" id="streets-navigation-vector" value="streets-navigation-vector">streets-navigation-vector<br>
+                        <img src="basemap/streets-navigation-vector.png" height="140px" width="220px"/><br/><br/>
+                        <input type="radio" name="basemaps" id="streets-night-vector" value="streets-night-vector">streets-night-vector<br>
+                        <img src="basemap/streets-night-vector.png" height="140px" width="220px"/><br/><br/>
+                        <input type="radio" name="basemaps" id="streets-relief-vector" value="streets-relief-vector">streets-relief-vector<br>
+                        <img src="basemap/streets-relief-vector.png" height="140px" width="220px"/><br/><br/>
+                        <input type="radio" name="basemaps" id="streets-vector" value="gray">streets-vector<br>
+                        <img src="basemap/streets-vector.png" height="140px" width="220px"/><br/><br/>
+                        <input type="radio" name="basemaps" id="dark-gray" value="dark-gray">dark-gray<br/>
+                        <img src="basemap/dark-gray.png" height="140px" width="220px"/><br/><br/>
+                        <input type="radio" name="basemaps" id="dark-gray-vector" value="dark-gray-vector">dark-gray-vector<br/>
+                        <img src="basemap/dark-gray-vector.png" height="140px" width="220px"/><br/><br/>
+                        <input type="radio" name="basemaps" id="gray" value="gray">gray<br/>
+                        <img src="basemap/gray.png" height="140px" width="220px"/><br/><br/>
+                        <input type="radio" name="basemaps" id="gray-vector" value="gray-vector">gray-vector<br/>
+                        <img src="basemap/gray-vector.png" height="140px" width="220px"/><br/><br/>
+                        <input type="radio" name="basemaps" id="terrain" value="terrain">terrain<br>
+                        <img src="basemap/terrain.png" height="140px" width="220px"/><br/><br/>
+                        <input type="radio" name="basemaps" id="oceans" value="oceans">oceans<br/>
+                        <img src="basemap/oceans.png" height="140px" width="220px"/><br/><br/>
+                        <input type="radio" name="basemaps" id="topo-vector" value="topo-vector">topo-vector<br>
+                        <img src="basemap/topo-vector.png" height="140px" width="220px"/>
+                    </form>
+                </div>
+                <br/>
+                <!--<input type="button" id="bnrefresh" value="加载" onclick="refresh()"/>-->
+                <input type="button" id="bnrefresh2" value="切换底图" onclick="refresh2()"/>
+                <br/>
+                <br/>
+               
+                <input type="checkbox" name="featurelayer" value="blockPoint" id="featurelayers1" onchange="add_blockPoint()" />街区点图层<br>
+                <input type="checkbox" name="featurelayer" value="road" id="featurelayers2" onchange="add_road()"/>道路网
+                <br/>
+                <br/>
+               <input type="button" id="bnjuanlian" value="卷帘" onclick="juanlian()"/>
+               
+            </div>
         </div>
-	   </div>
-      
+    </body>
+    
+</html>
