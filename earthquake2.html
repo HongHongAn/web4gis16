@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>Basic clustering on FeatureLayer</title>
+
+<link rel="stylesheet" href="https://js.arcgis.com/3.23/esri/css/esri.css">
+<script src="https://js.arcgis.com/3.23/"></script>
+
+<style>
+  html, body, #viewDiv {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  #infoDiv{
+    top: 0px;
+    right: 0px;
+    position: absolute;
+    z-index: 2;
+    opacity: 0.9;
+    background-color: whitesmoke;
+    padding: 8px;
+    font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+    font-size: 15px;
+  }
+</style>
+
+<script>
+  require([
+    "esri/map",
+    "esri/layers/CSVLayer",
+    "esri/Color",
+    "esri/symbols/SimpleMarkerSymbol",
+    "esri/renderers/SimpleRenderer",
+    "esri/InfoTemplate",
+    "esri/config",
+    "esri/layers/FeatureLayer",
+    "esri/dijit/PopupTemplate",
+    "esri/dijit/Legend",
+    "dojo/domReady!"
+  ], function(
+          Map, CSVLayer, Color, SimpleMarkerSymbol, SimpleRenderer, InfoTemplate, esriConfig, FeatureLayer, PopupTemplate, Legend
+  ) {
+      
+      
+    // Use CORS
+    esriConfig.defaults.io.corsEnabledServers.push("honghongan.github.io"); // supports CORS
+
+    // Use proxy if the server doesn't support CORS
+    // esriConfig.defaults.io.proxyUrl = "/proxy/"; 
+
+    var map = new Map("viewDiv", {
+      basemap: "gray-vector",
+      center: [ -73.92872, 40.71321 ],
+      zoom: 4
+    });
+
+    // Enable clustering in the layer's constructor
+    // and add the layer to the map
+      
+    csv = new CSVLayer("https://honghongan.github.io/web4gis16/all_month2.csv", {
+              copyright: "USGS.gov"
+            });
+
+    var serviceUrl = "https://honghongan.github.io/web4gis16/all_month2.csv";
+    var layer = new FeatureLayer(serviceUrl, {
+      outFields: [ "id", "type", "place" ],
+      featureReduction: {
+        type: "cluster"
+      },
+      infoTemplate: new PopupTemplate({
+        title: "{id}",
+        description: "{type} on {place}."
+      })
+    });
+    map.addLayer(csv);
+
+    map.on("load", function(evt){
+      var legend = new Legend({
+        map: map,
+        layerInfos: [{
+          layer: csv,
+          title: "地震数据可视化"
+        }]
+      }, "legendDiv");
+      legend.startup();
+    });
+
+  });
+
+</script>
+
+</head>
+
+<body>
+  <div id="viewDiv"></div>
+  <div id="infoDiv">
+    <div id="legendDiv"></div>
+  </div>
+</body>
+
+</html>

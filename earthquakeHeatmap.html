@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>FeatureLayer using HeatmapRenderer</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/3.23/dijit/themes/claro/claro.css">
+  <link rel="stylesheet" href="https://js.arcgis.com/3.23/esri/css/esri.css">
+  <style>
+    html, body, #map {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+  <script src="https://js.arcgis.com/3.23/"></script>
+  <script>
+    var map;
+    require([
+         "esri/map", 
+        "esri/layers/CSVLayer",
+        "esri/Color",
+        "esri/symbols/SimpleMarkerSymbol",
+        "esri/renderers/SimpleRenderer",
+        "esri/InfoTemplate",
+        "esri/config",
+         "esri/renderers/HeatmapRenderer",
+        "dojo/domReady!"
+
+      ],
+      function (Map, CSVLayer, Color, SimpleMarkerSymbol, SimpleRenderer, InfoTemplate, esriConfig,HeatmapRenderer){
+        esriConfig.defaults.io.corsEnabledServers.push("honghongan.github.io"); // supports CORS        
+
+        map = new Map("map", {
+          basemap: "gray",
+          center: [-119.11, 36.65],
+          zoom: 4,
+//          minZoom: 7,
+//          maxZoom: 9
+        });
+        
+        csv = new CSVLayer("https://honghongan.github.io/web4gis16/all_month2.csv", {
+          copyright: "USGS.gov"
+        });
+        var infoTemplate = new InfoTemplate("Attributes",
+          "Name: ${Name}<br>depth: ${depth:formatMagnitude}");
+
+
+        var serviceURL = "https://honghongan.github.io/web4gis16/all_month2.csv";
+        var heatmapFeatureLayerOptions = {
+          mode: CSVLayer.MODE_SNAPSHOT,
+          infoTemplate: infoTemplate,
+          outFields: [
+            "alcres",
+            "depth"
+          ]
+        };
+        var heatmapFeatureLayer = new CSVLayer(serviceURL, heatmapFeatureLayerOptions);
+        var heatmapRenderer = new HeatmapRenderer();
+        heatmapFeatureLayer.setRenderer(heatmapRenderer);
+        map.addLayer(heatmapFeatureLayer);
+      });
+  </script>
+  </head>
+  <body>
+    <div id="map"></div>
+  </body>
+</html>
